@@ -24,7 +24,8 @@ window.onload = function () {
         'speed': 10,
         'inertion': 0,
         'direction': 'up',
-        'keys': [40, 38]
+        'keys': [40, 38],
+        'score': 0,
     };
     var player2 = {
         'width': 30,
@@ -35,7 +36,8 @@ window.onload = function () {
         'speed': 10,
         'inertion': 0,
         'direction': 'up',
-        'keys': [87, 83]
+        'keys': [87, 83],
+        'score': 0,
     };
 
     var ball = {
@@ -51,12 +53,22 @@ window.onload = function () {
     window.onkeydown = handlerKey;
     window.onkeyup = handlerKey;
 
-    // реди стеди го! сделать счёт очков! 
-    setInterval(function () {
-        moveBall();
-        movePlayer();
-        drawAll();
-    }, 1000 / fps);
+    // реди стеди го! сделать счёт очков!
+
+    if (1) {
+        start();
+    }
+
+    function start() {
+        var game = setInterval(function () {
+            moveBall();
+            movePlayer();
+            drawAll();
+            if (player1.score >= 10 || player2.score >= 10) {
+                clearInterval(game);
+            }
+        }, 1000 / fps);
+    }
 
 
     function drawAll() {
@@ -69,7 +81,9 @@ window.onload = function () {
         drawRectImage(player2.posX, player2.posY, player2.width, player2.height, player2.skin);
         //drawCanvas (defBallXPos, defBallYPos, 10, 10, ball.skin);
         //
-        test(defBallXPos, defBallYPos, ball.radius, ball.radius, img3, ball.deg);
+        drawSpinImg(defBallXPos, defBallYPos, ball.radius, ball.radius, img3, ball.deg);
+        drawText(player1.score, canvas.width / 2 - 30, 35);
+        drawText(player2.score, canvas.width / 2 + 30, 35);
     }
 
     function drawRectangle(horizontal, vertical, cWidth, cHeight, cColor) {
@@ -79,14 +93,11 @@ window.onload = function () {
 
     function drawRectImage(horizontal, vertical, cWidth, cHeight, images) {
         context.beginPath();
-        //context.globalAlpha = 0.4;
         context.drawImage(images, horizontal, vertical, cWidth, cHeight);
         context.closePath();
-
-
     }
 
-    function test(x, y, w, h, img, deg) {
+    function drawSpinImg(x, y, w, h, img, deg) {
         context.save();
         context.translate(x + w / 2, y + h / 2);
         context.rotate(deg * Math.PI / 180.0);
@@ -94,27 +105,33 @@ window.onload = function () {
         context.drawImage(img, x, y, w, h);
         context.restore();
     }
+    function drawText(text, x, y) {
+        context.font = "45px Arial";
+        context.fillStyle = "white";
+        context.fillText(text, x, y);
+    }
 
     function drawBall(centerX, centerY, radius, color) {
-         context.beginPath();
-         context.arc(centerX, centerY, radius, 0, Math.PI * 2, true)
-         context.fillStyle = color;
-         context.fill();
-         context.lineWidth = 2;
-         context.strokeStyle = 'black';
-         context.stroke();
-         context.closePath();
-
-
+        context.beginPath();
+        context.arc(centerX, centerY, radius, 0, Math.PI * 2, true)
+        context.fillStyle = color;
+        context.fill();
+        context.lineWidth = 2;
+        context.strokeStyle = 'black';
+        context.stroke();
+        context.closePath();
     }
 
     function moveBall() {
         defBallXPos += ballXSpeed;
         defBallYPos += ballYSpeed;
-        if (defBallXPos + (ball.radius / 1.5) >= canvas.width || defBallXPos + (ball.radius / 3) <= 0) {
+        if (defBallXPos + (ball.radius / 1.5) >= canvas.width) {
             defaultSettings();
+            player1.score += 1;
+        } else if (defBallXPos + (ball.radius / 3) <= 0) {
+            defaultSettings();
+            player2.score += 1;
         }
-
 
         if ((defBallYPos + (ball.radius / 2) >= player1.posY && defBallYPos <= (player1.posY + player1.height)) && defBallXPos <= player1.width) {
             if (ballXSpeed < 0) {
@@ -130,7 +147,6 @@ window.onload = function () {
             }
         }
 
-
         if (defBallYPos + ball.radius >= canvas.height || defBallYPos <= 0) {
             ballYSpeed = ballYSpeed * (-1);
         }
@@ -140,7 +156,6 @@ window.onload = function () {
         } else {
             ball.deg -= ball.spinSpeed;
         }
-
     }
 
     function movePlayer() {
@@ -148,34 +163,28 @@ window.onload = function () {
         if (pressedKeys[87]) {
             if (!(player2.posY <= 0)) {
                 player2.posY -= player2.speed;
-                drawRectImage(player2.posX, player2.posY, player2.width, player2.height, player2.skin);
             }
         }
-
         if (pressedKeys[83]) {
             if (!((player2.posY + player2.height) >= canvas.height)) {
                 player2.posY += player2.speed;
-                drawRectImage(player2.posX, player2.posY, player2.width, player2.height, player2.skin);
             }
         }
         if (pressedKeys[40]) {
             if (!((player1.posY + player1.height) >= canvas.height)) {
                 player1.posY += player1.speed;
-                drawRectImage(player1.posX, player1.posY, player1.width, player1.height, player1.skin);
             }
         }
-
         if (pressedKeys[38]) {
             if (!(player1.posY <= 0)) {
                 player1.posY -= player1.speed;
-                drawRectImage(player1.posX, player1.posY, player1.width, player1.height, player1.skin);
             }
         }
         handleInertion(player1);
         handleInertion(player2);
     }
 
-    function handleInertion(player) {      
+    function handleInertion(player) {
         if (player.inertion > 1 && player.direction == 'down' && (player.posY + player.height) < canvas.height) {
             player.inertion /= 2;
             player.posY += player.inertion;
@@ -216,7 +225,6 @@ window.onload = function () {
                     player2.direction = 'down';
                 }
             }
-            //playerInertion = playerSpeed;
         }
 
         return;
