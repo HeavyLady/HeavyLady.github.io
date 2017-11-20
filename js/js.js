@@ -1,9 +1,4 @@
 
-var defBallXPos;
-var defBallYPos;
-
-var ballXSpeed;
-var ballYSpeed;
 
 window.onload = function () {
 
@@ -11,7 +6,7 @@ window.onload = function () {
     var img = document.getElementById("background");
     var img2 = document.getElementById("player");
     var img3 = document.getElementById("ball");
-    console.log(img3);
+   
     var context = canvas.getContext("2d");
     var fps = 60;
 
@@ -44,8 +39,16 @@ window.onload = function () {
         'radius': 60,
         'skin': '#f20',
         'deg': 0,
-        'spinSpeed': 3
-    }
+        'spinSpeed': 2,
+  		'speed' : 2,
+  		'maxSpeed': 10,
+  		'movementX' : 0,
+  		'movementY' : 0,
+  		'posX' : 0,
+        'posY' : 0,
+         
+    }  
+
 
     defaultSettings();
 
@@ -79,9 +82,9 @@ window.onload = function () {
         // Отступ по X, отступ по Y, ширина полота, высота полотна, цвет
         drawRectImage(player1.posX, player1.posY, player1.width, player1.height, player1.skin);
         drawRectImage(player2.posX, player2.posY, player2.width, player2.height, player2.skin);
-        //drawCanvas (defBallXPos, defBallYPos, 10, 10, ball.skin);
+        //drawCanvas (ball.posX, ball.posY, 10, 10, ball.skin);
         //
-        drawSpinImg(defBallXPos, defBallYPos, ball.radius, ball.radius, img3, ball.deg);
+        drawSpinImg(ball.posX, ball.posY, ball.radius, ball.radius, img3, ball.deg);
         drawText(player1.score, canvas.width / 2 - 30, 35);
         drawText(player2.score, canvas.width / 2 + 30, 35);
     }
@@ -123,32 +126,54 @@ window.onload = function () {
     }
 
     function moveBall() {
-        defBallXPos += ballXSpeed;
-        defBallYPos += ballYSpeed;
-        if (defBallXPos + (ball.radius / 1.5) >= canvas.width) {
+        ball.posX += ball.movementX;
+        ball.posY += ball.movementY;
+
+        // Увеличение скорости головы
+        if (ball.speed < ball.maxSpeed){
+        	ball.speed = ball.speed * 1.001;
+        	ball.spinSpeed = ball.speed;
+        	if (ball.movementX < 0) {
+        		ball.movementX = ball.speed * (-1);
+        	} else {
+        		ball.movementX = ball.speed;
+        	}
+
+        	if (ball.movementY < 0) {
+        		ball.movementY = ball.speed * (-1);
+        	} else {
+        		ball.movementY = ball.speed;
+        	}        	
+        	
+        }
+
+        if (ball.posX + (ball.radius / 1.5) >= canvas.width) {
             defaultSettings();
             player1.score += 1;
-        } else if (defBallXPos + (ball.radius / 3) <= 0) {
+        } else if (ball.posX + (ball.radius / 3) <= 0) {
             defaultSettings();
             player2.score += 1;
         }
 
-        if ((defBallYPos + (ball.radius / 2) >= player1.posY && defBallYPos <= (player1.posY + player1.height)) && defBallXPos <= player1.width) {
-            if (ballXSpeed < 0) {
-                ballXSpeed = ballXSpeed * (-1);
+        if ((ball.posY + (ball.radius / 2) >= player1.posY && ball.posY <= (player1.posY + player1.height)) && ball.posX <= player1.width) {
+            if (ball.movementX < 0) {
+                ball.movementX = ball.movementX * (-1);
                 ball.direction = 1;
             }
+
         }
 
-        if ((defBallYPos + (ball.radius / 2) >= player2.posY && defBallYPos <= (player2.posY + player2.height)) && (defBallXPos + ball.radius >= ((canvas.width - player2.width)))) {
-            if (ballXSpeed > 0) {
-                ballXSpeed = ballXSpeed * (-1);
+        if ((ball.posY + (ball.radius / 2) >= player2.posY && ball.posY <= (player2.posY + player2.height)) && (ball.posX + ball.radius >= ((canvas.width - player2.width)))) {
+            if (ball.movementX > 0) {
+                ball.movementX = ball.movementX * (-1);
                 ball.direction = 0;
             }
+
         }
 
-        if (defBallYPos + ball.radius >= canvas.height || defBallYPos <= 0) {
-            ballYSpeed = ballYSpeed * (-1);
+        if (ball.posY + ball.radius >= canvas.height || ball.posY <= 0) {
+            ball.movementY = ball.movementY * (-1);
+            console.log(ball.movementY);
         }
 
         if (ball.direction) {
@@ -246,21 +271,23 @@ window.onload = function () {
         player2.posX = canvas.width - player2.width;
         player2.posY = canvas.height / 2 - player2.height / 2;
 
-        defBallXPos = canvas.width / 2;
-        defBallYPos = canvas.height / 2;
+        ball.posX = canvas.width / 2;
+        ball.posY = canvas.height / 2;
 
-        ballXSpeed = 6;
-        ballYSpeed = 6;
+        ball.speed = 4;
+
+        ball.movementX = ball.speed;
+        ball.movementY = ball.speed;
 
         if (!Math.round(Math.random())) {
-            ballXSpeed = ballXSpeed * (-1);
+            ball.movementX = ball.movementX * (-1);
             ball.direction = 0;
         } else {
             ball.direction = 1;
         }
 
         if (!Math.round(Math.random())) {
-            ballYSpeed *= -1;
+            ball.movementY *= -1;
         }
     }
 }
